@@ -488,4 +488,51 @@ def edge_correct_3pcf(path: str):
     # type: dict
     return out
 
-
+def CIC_grid(coords: np.array, grid_edges: list, grid_centers: 
+             list, bin_width: float, weights: np.array):
+    # A function to use CIC grid interpolation when painting the density field
+    # If the user wishes to use this option, replace the np.histogram step in
+    #   conker_series.py for all four grids, N, R, N_mp, and R_mp
+    # TODO -> Incorporation into driver routine as optional parameters
+    mesh_ijk = np.array((np.floor((coords.T[0] - grid_edges[0][0])/bin_width),
+                    np.floor((coords.T[1] - grid_edges[1][0])/bin_width),
+                    np.floor((coords.T[2] - grid_edges[2][0])/bin_width))).T.astype(dtype=int)
+    mesh_ijk_plus_one = mesh_ijk + 1
+    data_grid = np.zeros((len(grid_centers[0]),len(grid_centers[1]),len(grid_centers[2])))
+    for g_id in range(len(coords)):
+        dg_i,dg_j,dg_k = mesh_ijk[g_id][0],mesh_ijk[g_id][1],mesh_ijk[g_id][2]
+        if (dg_i+1<data_grid.shape[0])&(dg_j+1<data_grid.shape[1])&(dg_k+1<data_grid.shape[2]):
+            data_grid[dg_i,dg_j,dg_k] += (weights[g_id]/(bin_width**3))*(
+                grid_centers[0][dg_i+1]-coords[g_id][0])*(
+                grid_centers[1][dg_j+1]-coords[g_id][1])*(
+                grid_centers[2][dg_k+1]-coords[g_id][2])
+            data_grid[dg_i+1,dg_j,dg_k] += (weights[g_id]/(bin_width**3))*(
+                coords[g_id][0]-grid_centers[0][dg_i])*(
+                grid_centers[1][dg_j+1]-coords[g_id][1])*(
+                grid_centers[2][dg_k+1]-coords[g_id][2])
+            data_grid[dg_i,dg_j+1,dg_k] += (weights[g_id]/(bin_width**3))*(
+                grid_centers[0][dg_i+1]-coords[g_id][0])*(
+                coords[g_id][1]-grid_centers[1][dg_j])*(
+                grid_centers[2][dg_k+1]-coords[g_id][2])
+            data_grid[dg_i,dg_j,dg_k+1] += (weights[g_id]/(bin_width**3))*(
+                grid_centers[0][dg_i+1]-coords[g_id][0])*(
+                grid_centers[1][dg_j+1]-coords[g_id][1])*(
+                coords[g_id][2]-grid_centers[2][dg_k])
+            data_grid[dg_i,dg_j+1,dg_k+1] += (weights[g_id]/(bin_width**3))*(
+                grid_centers[0][dg_i+1]-coords[g_id][0])*(
+                coords[g_id][1]-grid_centers[1][dg_j])*(
+                coords[g_id][2]-grid_centers[2][dg_k])
+            data_grid[dg_i+1,dg_j,dg_k+1] += (weights[g_id]/(bin_width**3))*(
+                coords[g_id][0]-grid_centers[0][dg_i])*(
+                grid_centers[1][dg_j+1]-coords[g_id][1])*(
+                coords[g_id][2]-grid_centers[2][dg_k])
+            data_grid[dg_i+1,dg_j+1,dg_k] += (weights[g_id]/(bin_width**3))*(
+                coords[g_id][0]-grid_centers[0][dg_i])*(
+                coords[g_id][1]-grid_centers[1][dg_j])*(
+                grid_centers[2][dg_k+1]-coords[g_id][2])
+            data_grid[dg_i+1,dg_j+1,dg_k+1] += (weights[g_id]/(bin_width**3))*(
+                coords[g_id][0]-grid_centers[0][dg_i])*(
+                coords[g_id][1]-grid_centers[1][dg_j])*(
+                coords[g_id][2]-grid_centers[2][dg_k])
+    # type: np.array
+    return data_grid
