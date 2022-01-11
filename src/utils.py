@@ -488,6 +488,7 @@ def edge_correct_3pcf(path: str):
     # type: dict
     return out
 
+
 def CIC_grid(coords: np.array, grid_edges: list, grid_centers: 
              list, bin_width: float, weights: np.array):
     # A function to use CIC grid interpolation when painting the density field
