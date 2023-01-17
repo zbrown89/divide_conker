@@ -1,7 +1,7 @@
 # =========================================================================== #
 """
 Created on Wed Dec 15 13:53:56 2021
-@authors: Zachery Brown
+@authors: Zachery Brown, Benjamin Levi
 
 Description: This file, divide.py, is used to partition the galaxy catalog
 into sections. Each partition corresponds to a rectangular window in the 
@@ -94,7 +94,7 @@ class DivideScheme:
             
             
     def partitionCatalog(self, save_plan: bool,
-                         plot_results: bool, save_plot: bool):
+                         plot_results: bool, save_plot: bool, theta_user = None):
         # This function actually creates the partition
         # User options for saving the plan, plotting, and saving the plot
         # WARNING -> Plotting works best in jupyter
@@ -114,14 +114,20 @@ class DivideScheme:
         #   corresponding RA and DEC limits
         self.LOS_boxes = []
         
-        # Define theta_P with the maximum s bin edge plus the grid size
-        self.theta_P = np.degrees((self.desired_s_bin_edges.max()+self.g_s)/
-                                  u.z2r(self.rand['z'].min(),self.cosmo))
+        if theta_user is not None:
+            self.theta_P = theta_user
+        
+        # Optional theta_user patameter
+        # Over-writes the automated theta_p corresponding to the partition size
+        elif theta_user == None:
+            # Define theta_P with the maximum s bin edge plus the grid size
+            self.theta_P = np.degrees((self.desired_s_bin_edges.max()+self.g_s)/
+                                      u.z2r(self.rand['z'].min(),self.cosmo))
         
         if 100*(np.radians(self.theta_P)**2/2) > 5.:
             # Include a failure for improper partitions
             # If \theta_P**2/2 is larger than 0.95%, trip warning
-            # Temporarily set the error limit to: 5%
+            # Temporarily set the error limit to: 5% (User may change this)
             # 0.95% warning ensures no errors at this step. This is the "safe"
             #   option when creating a divide plan
             # TODO -> Investigate errors here
@@ -375,7 +381,7 @@ class DivideScheme:
                 
                 
 def DivideCatalog(rand_file: str, cfg_file: str, save_plan: bool,
-                  plot_results: bool, save_plot: bool, verbose: bool):
+                  plot_results: bool, save_plot: bool, verbose: bool, theta_user = None):
     # A function to run the divide plan routines with a user defined set of 
     #   parameters. Opttional params for saving, plotting, etc.
     
@@ -387,8 +393,9 @@ def DivideCatalog(rand_file: str, cfg_file: str, save_plan: bool,
     # Run the partition scheme and decide what to do with the results
     divp.partitionCatalog(save_plan=save_plan,
                           plot_results=plot_results,
-                          save_plot=save_plot)
-    return           
+                          save_plot=save_plot,
+                          theta_user=theta_user)
+    return            
                 
             
             
