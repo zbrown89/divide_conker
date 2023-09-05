@@ -62,6 +62,10 @@ class DivideScheme:
         # Checks whether the shiftRA function needs to be applied (SGC data)
         self.shift_condition = (int(((self.rand['ra'].max()-
                                       self.rand['ra'].min())//1)+1) == 360)
+
+        # Uncommment the line below as a hot-fix if the shift condition
+        #  is not working properly
+        #self.shift_condition = True
         
         # Shift if the numerical min/max of RA are approximately 
         #   0 and 360 respectively
